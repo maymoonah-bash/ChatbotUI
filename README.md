@@ -1,6 +1,7 @@
 # ChatbotUI
-Chatbot UI build using react native expo. Works on the web and phone
-You can find the code in the Master branch
+## React native expo chatbot UI. Works on the web and phone.
+
+## You can find the code in the Master branch
 
 
 ![Screenshot 2024-03-28 at 1 46 41 AM](https://github.com/maymoonah-bash/ChatbotUI/assets/68162866/83d87455-558a-49e2-b1a2-2eb0c6081b02)
