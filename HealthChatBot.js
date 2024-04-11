@@ -1,3 +1,4 @@
+// Import necessary modules
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform} from 'react-native';
 import { Icon } from 'react-native-elements';
@@ -7,27 +8,65 @@ const HealthChatBot = () => {
     const [textInputValue, setTextInputValue] = useState('');
 
     // Function to handle sending messages
-    const sendMessage = (message) => {
+    /* 
+    This function sends the user's message to the chatbot API and then adds the chatbot's response to the messages array, 
+    causing it to be displayed in the chat area.
+    */
+    const sendMessage = async (message) => {
       setTextInputValue(''); // Clear the text input after sending the message
-      setMessages([...messages, { text: message, sender: 'user' }]);
-      const lowercaseMessage = message.toLowerCase();
       
-      if (lowercaseMessage.includes('hello')) { // Add logic here to handle bot response or other functionality
-        respond(); // Respond to appointment-related inquiries
-      } 
-    };
+      // Create a new message object for the user's message
+      const newUserMessage = { text: message, sender: 'user' };
 
-      // Function to handle appointment-related inquiries
-  const respond = () => {
-    // You can implement your logic for handling messages here
-    setMessages([...messages, { text: 'Hi. How are you feeling today? \nis there something you want to talk about?', sender: 'bot' }]);
-  };
+      console.log('Response data:', data)
+
+      // Update the messages state with the new user message
+      setMessages((prevMessages) => [...prevMessages, newUserMessage]);
+
+      // Format user message with <user> and <agent> tags
+      const formattedMessage = '<user> ' + message + ' <agent>'
+    
+      // Send message to the chatbot API
+      const response = await fetch(
+        'https://api.llama-health-chat.com/predict',// 'https://Llama-health-chatbot-env.eba-8jfmcypd.us-east-1.elasticbeanstalk.com/predict', // URL of the chatbot API
+        {
+          method: 'POST', // Send data using POST method
+          headers: {
+            'Content-Type': 'application/json', // Specify content type as JSON
+          },
+          // body: JSON.stringify({ text: message }), // Send message as JSON string in the body
+          body: JSON.stringify({ text: formattedMessage }), // Send formatted message as JSON string in the body
+
+        }
+      );
+  // Parse response from the API
+  const data = await response.json(); // Convert response to JSON format
+
+  // Extract bot response from the received data
+  let botMessage = data.generated_text;
+  
+  // Remove the user message from the beginning of the bot message
+  const formattedBotMessage = botMessage.replace(formattedMessage, "");
+
+  // Create a new message object for the bot's response
+  const newBotMessage = { text: formattedBotMessage.trim(), sender: 'bot' };
+
+  // Trim the bot message to stop when another token is received
+  const regex = /<.*?>/;
+  const match = newBotMessage.text.match(regex);
+  const trimmedMessage = match ? newBotMessage.text.substring(0, newBotMessage.text.indexOf(match[0])) : newBotMessage.text;
+  newBotMessage.text = trimmedMessage;
+  
+  // Update the messages state with the new bot message
+  setMessages((prevMessages) => [...prevMessages, newBotMessage]);
+    };
+    
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerText}>Your personal mental health chatbot</Text>
+        <Text style={styles.headerText}>Wolcome to TherapAI</Text>
         <Icon name="heart" type="font-awesome" color="#2ecc71" size={28} />
       </View>
       
@@ -71,6 +110,7 @@ const HealthChatBot = () => {
         >
         {/* <TouchableOpacity style={styles.sendButton}> */}
           <Icon name="send" type="font-awesome" color="#fff" size={18} />
+          {/* <text type="font-awesome" color="#fff" size={18}>send</text> */}
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
